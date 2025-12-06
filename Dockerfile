@@ -1,4 +1,5 @@
 # Dockerfile pour Render - VS Code Server
+# Version: 1.0.2 - Fixed build directory issue
 FROM node:22-slim
 
 # Installer les dépendances système nécessaires pour compiler VS Code
@@ -14,7 +15,6 @@ WORKDIR /app
 
 # Copier les fichiers de dépendances en premier (pour optimiser le cache Docker)
 COPY package*.json ./
-COPY build ./build
 
 # Installer les dépendances npm
 RUN npm ci
