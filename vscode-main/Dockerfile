@@ -1,9 +1,12 @@
-# Dockerfile pour Render - VS Code Server
-# Version: 3.0.0 - FINAL FIX - Force Render rebuild with npm install
-# Last update: 2025-12-06 19:20 UTC - EMERGENCY RECONSTRUCTION
+# DOCKERFILE POUR RENDER - VERSION FINALE CORRECTE
+# ====================================================
+# Cette version utilise npm install au lieu de npm ci
+# Créé le: 2025-12-06 19:30 UTC
+# Commit: FORCE_REBUILD_2025
+
 FROM node:22-slim
 
-# Installer les dépendances système nécessaires pour compiler VS Code
+# Installation des dépendances système
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
@@ -11,22 +14,22 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Définir le répertoire de travail
+# Configuration du workspace
 WORKDIR /app
 
-# Copier les fichiers de dépendances en premier (pour optimiser le cache Docker)
+# Copie des fichiers package.json en premier
 COPY package*.json ./
 
-# Installer les dépendances npm - UTILISE npm install (PAS npm ci)
+# INSTALLATION NPM - VERSION CORRECTE: npm install
 RUN npm install
 
-# Copier le reste du code source
+# Copie du code source
 COPY . .
 
-# Compiler VS Code
+# Compilation de VS Code
 RUN npm run compile && npm run compile-extensions-build
 
-# Exposer le port (Render définit automatiquement $PORT)
+# Exposition du port
 EXPOSE $PORT
 
 # Commande de démarrage
