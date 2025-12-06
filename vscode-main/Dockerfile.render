@@ -1,0 +1,34 @@
+# Dockerfile pour Render (alternative si render.yaml ne fonctionne pas)
+FROM node:22-slim
+
+# Installer les dépendances système nécessaires
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+COPY build ./build
+
+# Installer les dépendances
+RUN npm ci
+
+# Copier le code source
+COPY . .
+
+# Compiler le projet
+RUN npm run compile && npm run compile-extensions-build
+
+# Exposer le port (Render définit $PORT automatiquement)
+ENV PORT=10000
+EXPOSE $PORT
+
+# Commande de démarrage
+CMD ["node", "out/server-main.js", "--host", "0.0.0.0", "--port", "$PORT", "--accept-server-license-terms"]
+

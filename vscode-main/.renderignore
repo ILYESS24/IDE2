@@ -1,0 +1,23 @@
+# Fichiers à ignorer lors du déploiement sur Render
+node_modules/
+.git/
+.vscode/
+*.log
+.DS_Store
+test/
+test-results/
+coverage/
+*.md
+!README.md
+.editorconfig
+.eslintrc.json
+tsconfig*.json
+!tsconfig.base.json
+build/
+out/
+!out/server-main.js
+!out/bootstrap-server.js
+extensions/*/node_modules/
+extensions/*/out/
+extensions/*/dist/
+

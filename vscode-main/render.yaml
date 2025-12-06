@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vscode-server
+    env: node
+    plan: standard  # standard ou pro recommandé (starter peut être insuffisant pour compiler)
+    buildCommand: npm install && npm run compile && npm run compile-extensions-build
+    startCommand: node start-server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+
