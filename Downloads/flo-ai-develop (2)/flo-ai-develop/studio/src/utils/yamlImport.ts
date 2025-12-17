@@ -159,29 +159,52 @@ export async function importFromYAML(yamlContent: string): Promise<{
   endNodeIds: string[];
   metadata: { name: string; version: string; description: string };
 }> {
-  const result = parseAriumYAML(yamlContent);
+  try {
+    const result = parseAriumYAML(yamlContent);
 
-  // Extract start and end nodes from workflow structure
-  let startNodeId: string | null = null;
-  const endNodeIds: string[] = [];
+    // Enhanced workflow structure extraction
+    let startNodeId: string | null = null;
+    const endNodeIds: string[] = [];
 
-  // This is a simplified extraction - you might need to enhance based on your workflow structure
-  if (result.nodes.length > 0) {
-    startNodeId = result.nodes[0].id; // Assume first node is start
-    endNodeIds.push(result.nodes[result.nodes.length - 1].id); // Assume last node is end
+    // Parse workflow structure from YAML
+    const workflow = load(yamlContent) as any;
+    if (workflow?.arium?.workflow) {
+      startNodeId = workflow.arium.workflow.start || null;
+      endNodeIds = Array.isArray(workflow.arium.workflow.end)
+        ? workflow.arium.workflow.end
+        : [workflow.arium.workflow.end].filter(Boolean);
+    }
+
+    // If no workflow structure defined, use defaults
+    if (!startNodeId && result.nodes.length > 0) {
+      startNodeId = result.nodes[0].id;
+    }
+    if (endNodeIds.length === 0 && result.nodes.length > 0) {
+      endNodeIds.push(result.nodes[result.nodes.length - 1].id);
+    }
+
+    console.log('🎯 Workflow imported:', {
+      nodesCount: result.nodes.length,
+      edgesCount: result.edges.length,
+      startNode: startNodeId,
+      endNodes: endNodeIds
+    });
+
+    return {
+      nodes: result.nodes,
+      edges: result.edges,
+      startNodeId,
+      endNodeIds,
+      metadata: {
+        name: result.workflowName || 'Generated Workflow',
+        version: result.workflowVersion || '1.0.0',
+        description: result.workflowDescription || 'AI-generated workflow',
+      },
+    };
+  } catch (error) {
+    console.error('❌ Failed to import YAML workflow:', error);
+    throw new Error(`Workflow import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  return {
-    nodes: result.nodes,
-    edges: result.edges,
-    startNodeId,
-    endNodeIds,
-    metadata: {
-      name: result.workflowName,
-      version: result.workflowVersion,
-      description: result.workflowDescription,
-    },
-  };
 }
 
 export function readFileAsText(file: File): Promise<string> {

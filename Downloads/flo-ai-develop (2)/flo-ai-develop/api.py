@@ -208,45 +208,83 @@ async def generate_studio_workflow(request: Request, data: StudioAIWorkflowReque
                 detail="No LLM API key configured. Set OPENROUTER_API_KEY, DEEPSEEK_API_KEY, or OPENAI_API_KEY",
             )
 
-        system_prompt = """
-You are an expert AI workflow architect for Aurora AI Studio.
-Given a natural language description of an automation or multi‑agent workflow,
-you MUST respond with a VALID YAML document in the following schema, and nothing else:
+        # Analyze the prompt to create intelligent workflow
+        prompt_lower = data.prompt.lower()
+
+        # Determine workflow type and agents based on prompt content
+        workflow_type = "general"
+        agents_config = []
+
+        if any(word in prompt_lower for word in ["research", "analyze", "investigate", "study"]):
+            workflow_type = "research"
+            agents_config = [
+                {"name": "researcher", "job": "Research and gather information on the topic"},
+                {"name": "analyzer", "job": "Analyze and synthesize the research findings"},
+                {"name": "writer", "job": "Write a comprehensive report based on the analysis"}
+            ]
+        elif any(word in prompt_lower for word in ["write", "content", "article", "blog", "email"]):
+            workflow_type = "content_creation"
+            agents_config = [
+                {"name": "planner", "job": "Plan the content structure and outline"},
+                {"name": "writer", "job": "Write the main content"},
+                {"name": "editor", "job": "Review and edit the content for quality"}
+            ]
+        elif any(word in prompt_lower for word in ["customer", "support", "help", "service"]):
+            workflow_type = "customer_support"
+            agents_config = [
+                {"name": "analyzer", "job": "Analyze customer inquiry and categorize the issue"},
+                {"name": "resolver", "job": "Provide solution and generate response"},
+                {"name": "validator", "job": "Review response quality and ensure customer satisfaction"}
+            ]
+        elif any(word in prompt_lower for word in ["code", "programming", "develop", "software"]):
+            workflow_type = "development"
+            agents_config = [
+                {"name": "architect", "job": "Design the software architecture and approach"},
+                {"name": "developer", "job": "Implement the code based on specifications"},
+                {"name": "reviewer", "job": "Review code quality and suggest improvements"}
+            ]
+        else:
+            # Default general workflow
+            agents_config = [
+                {"name": "processor", "job": "Process and analyze the input request"},
+                {"name": "executor", "job": "Execute the main task based on analysis"},
+                {"name": "finalizer", "job": "Finalize and present the results"}
+            ]
+
+        # Generate workflow description
+        workflow_description = f"AI-generated {workflow_type.replace('_', ' ')} workflow for: {data.prompt[:50]}..."
+
+        system_prompt = f"""You are an expert AI workflow architect.
+
+Based on this request: "{data.prompt}"
+
+Generate a workflow with these agents: {', '.join([f'{agent["name"]} ({agent["job"]})' for agent in agents_config])}
+
+Return ONLY valid YAML in this format:
 
 metadata:
-  name: "short-workflow-name"
+  name: "{workflow_type}-workflow"
   version: "1.0.0"
-  description: "One sentence description of the workflow"
+  description: "{workflow_description}"
 
 arium:
   agents:
-    - id: "agent_id_1"
-      name: "Human friendly name"
-      job: "Clear description of what this agent does"
-      model:
-        provider: "openai"
-        name: "gpt-4o-mini"
+{chr(10).join([f'    - name: "{agent["name"]}"{chr(10)}      job: "{agent["job"]}"{chr(10)}      model:{chr(10)}        provider: "openai"{chr(10)}        name: "gpt-4o-mini"' for agent in agents_config])}
 
   workflow:
-    start: "agent_id_1"
+    start: "{agents_config[0]["name"]}"
     edges:
-      - from: "agent_id_1"
-        to: ["agent_id_2"]
-      - from: "agent_id_2"
-        to: ["agent_id_3"]
-    end: ["agent_id_3"]
+{chr(10).join([f'      - from: "{agents_config[i]["name"]}"{chr(10)}        to: ["{agents_config[i+1]["name"]}"]' for i in range(len(agents_config)-1)])}
+    end: ["{agents_config[-1]["name"]}"]
 
-Rules:
-- Use only fields shown in the schema above.
-- Use simple lowercase ids without spaces.
-- Make sure every `from` and `to` id exists in `agents`.
-- Do NOT wrap the YAML in markdown fences. Return ONLY raw YAML.
-"""
+Return ONLY the YAML, no other text."""
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": request.prompt},
         ]
+
+        logger.info(f"🤖 Generating workflow for prompt: {data.prompt[:100]}...")
 
         yaml_workflow = await llm.generate(messages)  # type: ignore[arg-type]
 
@@ -255,6 +293,12 @@ Rules:
             yaml_text = json.dumps(yaml_workflow)
         else:
             yaml_text = str(yaml_workflow)
+
+        logger.info(f"✅ Workflow generated, YAML length: {len(yaml_text)} chars")
+
+        # Log first 200 chars for debugging
+        if os.getenv("ENVIRONMENT") != "production":
+            logger.debug(f"📄 Generated YAML preview: {yaml_text[:200]}...")
 
         return {"status": "success", "yaml": yaml_text}
 
