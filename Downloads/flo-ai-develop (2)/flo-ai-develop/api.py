@@ -1,38 +1,71 @@
 """
 Aurora AI API - FastAPI application for Render deployment
 """
-print("🚀 Starting Aurora AI API...")
-from fastapi import FastAPI, HTTPException
+import logging
+import os
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO if os.getenv("ENVIRONMENT") != "production" else logging.WARNING,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Rate limiting configuration
+limiter = Limiter(key_func=get_remote_address)
+
+# Rate limits based on environment
+if os.getenv("ENVIRONMENT") == "production":
+    # Strict limits for production
+    DEFAULT_RATE_LIMIT = "10/minute"
+    WORKFLOW_RATE_LIMIT = "5/minute"
+    HEALTH_RATE_LIMIT = "60/minute"
+else:
+    # Relaxed limits for development
+    DEFAULT_RATE_LIMIT = "100/minute"
+    WORKFLOW_RATE_LIMIT = "20/minute"
+    HEALTH_RATE_LIMIT = "200/minute"
+
+# Debug logs only in development
+if os.getenv("ENVIRONMENT") != "production":
+    logger.info("🚀 Starting Aurora AI API...")
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 import os
 import asyncio
 from typing import Optional, Dict, Any
 import json
 
-print("📦 Loading Aurora AI imports...")
 # Aurora AI imports
 from aurora_ai.builder.agent_builder import AgentBuilder
-print("✓ AgentBuilder imported")
 from aurora_ai.llm import OpenAI, Anthropic, Gemini
-print("✓ LLM modules imported")
 from aurora_ai.arium import auroraBuilder
-print("✓ Arium imported")
 from aurora_ai.models.agent import Agent
-print("✓ Agent model imported")
 from aurora_ai.arium.memory import MessageMemory
-print("✓ MessageMemory imported")
+from cache import cached_ai_response
 
-print("🔧 Creating FastAPI app...")
+if os.getenv("ENVIRONMENT") != "production":
+    logger.info("✓ All Aurora AI modules imported successfully")
+
 app = FastAPI(
     title="Aurora AI API",
     description="Aurora AI Agent Framework API",
     version="1.0.0"
 )
-print("✓ FastAPI app created")
+
+# Add rate limiting middleware
+app.add_middleware(SlowAPIMiddleware)
+
+# Configure rate limit exceeded handler
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS middleware
-print("🔒 Setting up CORS middleware...")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Configure appropriately for production
@@ -40,10 +73,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-print("✓ CORS configured")
 
 # Request/Response models
-print("📝 Defining request/response models...")
 class AgentRequest(BaseModel):
     prompt: str
     model: str = "gpt-4o-mini"
@@ -60,12 +91,12 @@ class SimpleWorkflowRequest(BaseModel):
 
 class StudioAIWorkflowRequest(BaseModel):
     prompt: str
-print("✓ Models defined")
 
 @app.get("/")
-async def root():
+@limiter.limit(HEALTH_RATE_LIMIT)
+async def root(request: Request):
     """Health check endpoint"""
-    print("📡 Root endpoint called")
+    logger.info("Health check endpoint called")
     return {"message": "Flo AI API is running!", "status": "healthy"}
 
 @app.get("/health")
@@ -84,7 +115,9 @@ async def health():
     }
 
 @app.post("/agent/chat")
-async def chat_with_agent(request: AgentRequest):
+@limiter.limit(DEFAULT_RATE_LIMIT)
+@cached_ai_response
+async def chat_with_agent(req: Request, request: AgentRequest):
     """Simple agent chat endpoint"""
     try:
         # Create LLM based on provider
@@ -124,7 +157,9 @@ async def chat_with_agent(request: AgentRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/studio/ai-workflow")
-async def generate_studio_workflow(request: StudioAIWorkflowRequest):
+@limiter.limit(WORKFLOW_RATE_LIMIT)
+@cached_ai_response
+async def generate_studio_workflow(request: Request, data: StudioAIWorkflowRequest):
     """
     Generate an Aurora YAML workflow from a natural language description.
 
@@ -214,7 +249,9 @@ Rules:
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log the actual error securely (never expose to client)
+        logger.error(f"Studio workflow generation failed: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error occurred while generating workflow")
 
 @app.post("/workflow/simple")
 async def run_simple_workflow(request: SimpleWorkflowRequest):
@@ -303,8 +340,7 @@ async def run_yaml_workflow(request: WorkflowRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    print("🌐 Starting uvicorn server...")
     import uvicorn
     port = int(os.getenv("PORT", 8000))
-    print(f"🚀 Server will run on http://0.0.0.0:{port}")
+    logger.info(f"Starting server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
