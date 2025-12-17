@@ -61,7 +61,9 @@ async def health():
         "status": "healthy",
         "version": "1.0.0",
         "providers": {
+            "openrouter": bool(os.getenv("OPENROUTER_API_KEY")),
             "openai": bool(os.getenv("OPENAI_API_KEY")),
+            "deepseek": bool(os.getenv("DEEPSEEK_API_KEY")),
             "anthropic": bool(os.getenv("ANTHROPIC_API_KEY")),
             "gemini": bool(os.getenv("GOOGLE_API_KEY")),
         }
@@ -116,11 +118,20 @@ async def generate_studio_workflow(request: StudioAIWorkflowRequest):
     with the API key provided in environment variables.
     """
     try:
-        # Prefer DeepSeek if configured, otherwise fall back to OpenAI
+        # Check for API keys in order of preference: OpenRouter -> DeepSeek -> OpenAI
+        openrouter_key = os.getenv("OPENROUTER_API_KEY")
         deepseek_key = os.getenv("DEEPSEEK_API_KEY")
         openai_key = os.getenv("OPENAI_API_KEY")
 
-        if deepseek_key:
+        if openrouter_key:
+            # OpenRouter - accès à tous les modèles via une seule API
+            llm = OpenAI(
+                model=os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini"),
+                api_key=openrouter_key,
+                temperature=0.2,
+                base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            )
+        elif deepseek_key:
             # DeepSeek is OpenAI-compatible but uses its own base URL and model name
             llm = OpenAI(
                 model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
@@ -133,7 +144,7 @@ async def generate_studio_workflow(request: StudioAIWorkflowRequest):
         else:
             raise HTTPException(
                 status_code=400,
-                detail="No LLM API key configured (set DEEPSEEK_API_KEY or OPENAI_API_KEY)",
+                detail="No LLM API key configured. Set OPENROUTER_API_KEY, DEEPSEEK_API_KEY, or OPENAI_API_KEY",
             )
 
         system_prompt = """

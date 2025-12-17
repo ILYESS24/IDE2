@@ -13,17 +13,39 @@ L'erreur 400 que vous rencontrez signifie que les clés API nécessaires ne sont
    ```
 
 2. **Configurez vos clés API dans `.env`** :
+
+   ### Option 1: OpenRouter (RECOMMANDÉ - accès à tous les modèles)
+   ```env
+   # Clé API OpenRouter (RECOMMANDÉ - accès à tous les modèles via une seule API)
+   OPENROUTER_API_KEY=sk-or-v1-your-openrouter-key-here
+
+   # Configuration OpenRouter (optionnel - valeurs par défaut ci-dessous)
+   OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+   OPENROUTER_MODEL=openai/gpt-4o-mini
+
+   # Port du serveur
+   PORT=8000
+   ```
+
+   **Modèles populaires sur OpenRouter :**
+   - `openai/gpt-4o-mini` (recommandé - équilibré)
+   - `openai/gpt-4o` (meilleur mais plus cher)
+   - `anthropic/claude-3-haiku` (rapide et bon)
+   - `anthropic/claude-3-sonnet` (excellent)
+   - `google/gemini-pro` (bon rapport qualité/prix)
+
+   ### Option 2: OpenAI direct
    ```env
    # Clé API OpenAI (OBLIGATOIRE pour la génération de workflows)
    OPENAI_API_KEY=sk-your-openai-api-key-here
 
-   # Clé API Anthropic (optionnel)
-   ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+   # Port du serveur
+   PORT=8000
+   ```
 
-   # Clé API Google/Gemini (optionnel)
-   GOOGLE_API_KEY=your-google-api-key-here
-
-   # Clé API DeepSeek (RECOMMANDÉ - moins cher que OpenAI)
+   ### Option 3: DeepSeek (moins cher)
+   ```env
+   # Clé API DeepSeek (optionnel - moins cher que OpenAI)
    DEEPSEEK_API_KEY=sk-your-deepseek-key-here
    DEEPSEEK_MODEL=deepseek-chat
    DEEPSEEK_BASE_URL=https://api.deepseek.com
@@ -53,8 +75,18 @@ python api.py
 
 ## Obtenir les clés API
 
+### 🏆 **OpenRouter (RECOMMANDÉ - Tous les modèles en 1)**
+- **Site web** : https://openrouter.ai/
+- **Avantages** : Accès à 100+ modèles (GPT-4, Claude, Gemini, etc.) via une seule API
+- **Prix** : Crédits gratuits au départ, paiement à l'usage
+- **Comment obtenir** :
+  1. Créez un compte sur https://openrouter.ai/
+  2. Allez dans "API Keys" et créez une nouvelle clé
+  3. La clé commence par `sk-or-v1-`
+
+### Autres options :
 - **OpenAI**: https://platform.openai.com/api-keys
-- **DeepSeek**: https://platform.deepseek.com/api-keys (recommandé, moins cher)
+- **DeepSeek**: https://platform.deepseek.com/api-keys (moins cher)
 - **Anthropic**: https://console.anthropic.com/
 - **Google AI**: https://makersuite.google.com/app/apikey
 
