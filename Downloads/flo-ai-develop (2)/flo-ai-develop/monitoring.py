@@ -279,7 +279,8 @@ def main():
     monitor = APIMonitor()
 
     # Print configuration
-    print("🚀 Aurora AI API Monitor"    print(f"📡 API URL: {monitor.api_url}")
+    print("🚀 Aurora AI API Monitor")
+    print(f"📡 API URL: {monitor.api_url}")
     print(f"⏱️  Check Interval: {monitor.check_interval}s")
     print(f"📧 Alerts: {'Enabled' if monitor.alert_email else 'Disabled'}")
     print(f"⚡ Response Time Threshold: {monitor.response_time_threshold}s")

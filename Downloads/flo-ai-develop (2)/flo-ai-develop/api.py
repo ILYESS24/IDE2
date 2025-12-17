@@ -11,21 +11,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Rate limiting configuration
-limiter = Limiter(key_func=get_remote_address)
-
-# Rate limits based on environment
-if os.getenv("ENVIRONMENT") == "production":
-    # Strict limits for production
-    DEFAULT_RATE_LIMIT = "10/minute"
-    WORKFLOW_RATE_LIMIT = "5/minute"
-    HEALTH_RATE_LIMIT = "60/minute"
-else:
-    # Relaxed limits for development
-    DEFAULT_RATE_LIMIT = "100/minute"
-    WORKFLOW_RATE_LIMIT = "20/minute"
-    HEALTH_RATE_LIMIT = "200/minute"
-
 # Debug logs only in development
 if os.getenv("ENVIRONMENT") != "production":
     logger.info("🚀 Starting Aurora AI API...")
@@ -42,16 +27,45 @@ import asyncio
 from typing import Optional, Dict, Any
 import json
 
-# Aurora AI imports
-from aurora_ai.builder.agent_builder import AgentBuilder
-from aurora_ai.llm import OpenAI, Anthropic, Gemini
-from aurora_ai.arium import auroraBuilder
-from aurora_ai.models.agent import Agent
-from aurora_ai.arium.memory import MessageMemory
-from cache import cached_ai_response
+# Rate limiting configuration
+limiter = Limiter(key_func=get_remote_address)
 
-if os.getenv("ENVIRONMENT") != "production":
-    logger.info("✓ All Aurora AI modules imported successfully")
+# Rate limits based on environment
+if os.getenv("ENVIRONMENT") == "production":
+    # Strict limits for production
+    DEFAULT_RATE_LIMIT = "10/minute"
+    WORKFLOW_RATE_LIMIT = "5/minute"
+    HEALTH_RATE_LIMIT = "60/minute"
+else:
+    # Relaxed limits for development
+    DEFAULT_RATE_LIMIT = "100/minute"
+    WORKFLOW_RATE_LIMIT = "20/minute"
+    HEALTH_RATE_LIMIT = "200/minute"
+
+# Aurora AI imports (moved after basic setup to avoid blocking startup)
+try:
+    from aurora_ai.builder.agent_builder import AgentBuilder
+    from aurora_ai.llm import OpenAI, Anthropic, Gemini
+    from aurora_ai.arium import auroraBuilder
+    from aurora_ai.models.agent import Agent
+    from aurora_ai.arium.memory import MessageMemory
+    from cache import cached_ai_response
+
+    AURORA_IMPORTS_SUCCESS = True
+    if os.getenv("ENVIRONMENT") != "production":
+        logger.info("✓ All Aurora AI modules imported successfully")
+except ImportError as e:
+    logger.error(f"❌ Failed to import Aurora AI modules: {e}")
+    AURORA_IMPORTS_SUCCESS = False
+    # Define dummy classes/functions to avoid crashes
+    AgentBuilder = None
+    OpenAI = None
+    Anthropic = None
+    Gemini = None
+    auroraBuilder = None
+    Agent = None
+    MessageMemory = None
+    cached_ai_response = lambda func: func  # No-op decorator
 
 app = FastAPI(
     title="Aurora AI API",
@@ -59,10 +73,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add rate limiting middleware
-app.add_middleware(SlowAPIMiddleware)
-
-# Configure rate limit exceeded handler
+# Configure rate limiting
+app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS middleware
@@ -94,7 +106,7 @@ class StudioAIWorkflowRequest(BaseModel):
 
 @app.get("/")
 @limiter.limit(HEALTH_RATE_LIMIT)
-async def root(request: Request):
+async def root(request: Request, req: Request = None):
     """Health check endpoint"""
     logger.info("Health check endpoint called")
     return {"message": "Flo AI API is running!", "status": "healthy"}
