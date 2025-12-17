@@ -1,0 +1,26 @@
+# 🚀 CONFIGURATION RAPIDE OPENROUTER
+#
+# 1. Créez un fichier .env dans ce répertoire
+# 2. Copiez-collez ces lignes :
+#
+# OPENROUTER_API_KEY=sk-or-v1-votre-cle-openrouter-ici
+# OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+# OPENROUTER_MODEL=openai/gpt-4o-mini
+# PORT=8000
+#
+# 3. Obtenez votre clé API sur https://openrouter.ai/
+# 4. Démarrez l'API : python api.py
+# 5. Testez : http://localhost:8000/health
+#
+# 🎯 Avantages OpenRouter :
+# - Accès à 100+ modèles IA
+# - Un seul compte pour tous
+# - Crédits gratuits au départ
+# - Payez seulement ce que vous utilisez
+#
+# 📋 Modèles recommandés :
+# - openai/gpt-4o-mini (équilibré, recommandé)
+# - openai/gpt-4o (meilleur)
+# - anthropic/claude-3-haiku (rapide)
+# - anthropic/claude-3-sonnet (excellent)
+# - google/gemini-pro (bon rapport qualité/prix)
