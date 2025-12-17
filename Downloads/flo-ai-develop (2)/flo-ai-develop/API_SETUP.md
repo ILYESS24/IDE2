@@ -94,10 +94,39 @@ python api.py
 
 Une fois l'API démarrée, visitez `http://localhost:8000/health` pour vérifier que tout fonctionne.
 
+## Configuration sur Render (Déploiement)
+
+Si vous déployez sur Render et obtenez une erreur 400 :
+
+### 🔧 Configuration des variables d'environnement sur Render
+
+1. **Allez sur votre dashboard Render** : https://dashboard.render.com/
+2. **Sélectionnez votre service API** (flo-ai-api ou similaire)
+3. **Allez dans "Environment"**
+4. **Ajoutez ces variables** :
+
+   ```
+   OPENROUTER_API_KEY=sk-or-v1-votre-cle-ici
+   OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+   OPENROUTER_MODEL=openai/gpt-4o-mini
+   PORT=10000
+   ```
+
+5. **Redémarrez le service** depuis l'onglet "Manual Deploy"
+
+### 🚀 Script de déploiement automatique
+
+Utilisez le script PowerShell mis à jour :
+```powershell
+.\DEPLOY-TO-RENDER-NOW.ps1
+```
+
+Il configurera automatiquement OpenRouter pour vous !
+
 ## Dépannage
 
 Si vous avez encore des erreurs :
-1. Vérifiez que vos clés API sont valides
-2. Vérifiez que le fichier `.env` est dans le bon répertoire
-3. Redémarrez l'API après avoir modifié `.env`
-4. Vérifiez les logs de l'API pour plus de détails
+1. Vérifiez que vos clés API sont valides sur https://openrouter.ai/
+2. Vérifiez que les variables d'environnement sont configurées sur Render
+3. Vérifiez les logs Render pour plus de détails
+4. Redémarrez le service après modification des variables

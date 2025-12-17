@@ -11,16 +11,17 @@ if (!(Get-Command render -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# Demander la clé OpenAI
-$openai_key = Read-Host "🔑 Entrez votre clé OpenAI API (sk-...)"
+# Demander la clé OpenRouter (recommandé)
+$openrouter_key = Read-Host "🔑 Entrez votre clé OpenRouter API (sk-or-v1-...)"
 
-if (-not $openai_key -or -not $openai_key.StartsWith("sk-")) {
-    Write-Host "❌ Clé OpenAI invalide !" -ForegroundColor Red
+if (-not $openrouter_key -or -not $openrouter_key.StartsWith("sk-or-v1-")) {
+    Write-Host "❌ Clé OpenRouter invalide !" -ForegroundColor Red
+    Write-Host "   Obtenez-la sur : https://openrouter.ai/" -ForegroundColor Yellow
     exit 1
 }
 
 Write-Host ""
-Write-Host "✅ Clé OpenAI configurée" -ForegroundColor Green
+Write-Host "✅ Clé OpenRouter configurée" -ForegroundColor Green
 
 # 1. Connexion Render
 Write-Host ""
@@ -44,7 +45,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "🐳 Déploiement API Python (Docker)..." -ForegroundColor Yellow
 $api_cmd = @"
-render web create aurora-ai-api --repo https://github.com/ILYESS24/aurora-ai --env-vars "OPENAI_API_KEY=$openai_key" --plan starter
+render web create flo-ai-api --repo https://github.com/ILYESS24/IDE2 --env-vars "OPENROUTER_API_KEY=$openrouter_key,OPENROUTER_BASE_URL=https://openrouter.ai/api/v1,OPENROUTER_MODEL=openai/gpt-4o-mini" --plan starter
 "@
 Invoke-Expression $api_cmd
 if ($LASTEXITCODE -ne 0) {
@@ -56,7 +57,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "🎨 Déploiement Studio React..." -ForegroundColor Yellow
 $studio_cmd = @"
-render static create aurora-ai-studio --repo https://github.com/ILYESS24/aurora-ai --build-command "cd studio && npm install && npm run build" --publish-dir "./studio/dist" --env-vars "API_URL=https://aurora-ai-api.onrender.com,VITE_API_URL=https://aurora-ai-api.onrender.com"
+render static create flo-ai-studio --repo https://github.com/ILYESS24/IDE2 --build-command "cd studio && npm install && npm run build" --publish-dir "./studio/dist" --env-vars "API_URL=https://flo-ai-api.onrender.com,VITE_API_URL=https://flo-ai-api.onrender.com"
 "@
 Invoke-Expression $studio_cmd
 if ($LASTEXITCODE -ne 0) {
@@ -72,19 +73,19 @@ Write-Host ""
 Write-Host "🔗 APPLICATIONS DISPONIBLES :" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "   🌐 STUDIO VISUEL :" -ForegroundColor White
-Write-Host "      https://aurora-ai-studio.onrender.com" -ForegroundColor Green
+Write-Host "      https://flo-ai-studio.onrender.com" -ForegroundColor Green
 Write-Host ""
 Write-Host "   🤖 API BACKEND :" -ForegroundColor White
-Write-Host "      https://aurora-ai-api.onrender.com" -ForegroundColor Green
+Write-Host "      https://flo-ai-api.onrender.com" -ForegroundColor Green
 Write-Host ""
 Write-Host "   💚 HEALTH CHECK :" -ForegroundColor White
-Write-Host "      https://aurora-ai-api.onrender.com/health" -ForegroundColor Green
+Write-Host "      https://flo-ai-api.onrender.com/health" -ForegroundColor Green
 Write-Host ""
 Write-Host "⏱️ TEMPS D'ATTENTE :" -ForegroundColor Yellow
 Write-Host "   Les services mettent 5-10 minutes à se déployer" -ForegroundColor White
 Write-Host ""
 Write-Host "🧪 POUR TESTER :" -ForegroundColor Magenta
-Write-Host "   Ouvrez : https://aurora-ai-api.onrender.com/health" -ForegroundColor White
+Write-Host "   Ouvrez : https://flo-ai-api.onrender.com/health" -ForegroundColor White
 Write-Host ""
 Write-Host "💰 COÛT MENSUEL :" -ForegroundColor Yellow
 Write-Host "   API Python : $7/mois" -ForegroundColor White
