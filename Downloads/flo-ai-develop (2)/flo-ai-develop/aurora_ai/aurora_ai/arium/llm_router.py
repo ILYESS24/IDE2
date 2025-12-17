@@ -8,7 +8,7 @@ to make dynamic routing decisions based on conversation context and history.
 from abc import ABC, abstractmethod
 from typing import Dict, Optional, Callable, Any, Union, get_args, List, Awaitable
 from functools import wraps
-from aurora_ai.aurora.memory import (
+from .memory import (
     ExecutionPlan,
     StepStatus,
     MessageMemory,

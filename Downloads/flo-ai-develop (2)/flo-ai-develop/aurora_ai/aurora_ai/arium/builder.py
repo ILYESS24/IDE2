@@ -1,16 +1,16 @@
 from typing import List, Optional, Callable, Union, Dict, Any
-from aurora_ai.aurora.aurora import aurora
-from aurora_ai.aurora.memory import MessageMemory, BaseMemory, MessageMemoryItem
-from aurora_ai.aurora.protocols import ExecutableNode
-from aurora_ai.aurora.nodes import auroraNode, ForEachNode
+from .arium import aurora
+from .memory import MessageMemory, BaseMemory, MessageMemoryItem
+from .protocols import ExecutableNode
+from .nodes import auroraNode, ForEachNode
 from aurora_ai.models import BaseMessage, UserMessage
 from aurora_ai.models.agent import Agent, resolve_variables
 from aurora_ai.tool.base_tool import Tool
 import yaml
 from aurora_ai.builder.agent_builder import AgentBuilder
 from aurora_ai.llm import BaseLLM
-from aurora_ai.aurora.llm_router import create_llm_router
-from aurora_ai.aurora.nodes import FunctionNode
+from .llm_router import create_llm_router
+from .nodes import FunctionNode
 
 
 class auroraBuilder:

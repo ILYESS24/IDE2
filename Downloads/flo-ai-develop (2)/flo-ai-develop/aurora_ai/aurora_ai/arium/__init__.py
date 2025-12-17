@@ -1,4 +1,4 @@
-from .aurora import aurora
+from .arium import aurora
 from .base import Baseaurora
 from .builder import auroraBuilder, create_aurora
 from .memory import MessageMemory, BaseMemory, MessageMemoryItem

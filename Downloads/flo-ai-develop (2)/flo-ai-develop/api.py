@@ -1,6 +1,7 @@
 """
 Aurora AI API - FastAPI application for Render deployment
 """
+print("🚀 Starting Aurora AI API...")
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,20 +10,29 @@ import asyncio
 from typing import Optional, Dict, Any
 import json
 
+print("📦 Loading Aurora AI imports...")
 # Aurora AI imports
 from aurora_ai.builder.agent_builder import AgentBuilder
+print("✓ AgentBuilder imported")
 from aurora_ai.llm import OpenAI, Anthropic, Gemini
-from aurora_ai.aurora import AuroraBuilder
+print("✓ LLM modules imported")
+from aurora_ai.arium import auroraBuilder
+print("✓ Arium imported")
 from aurora_ai.models.agent import Agent
-from aurora_ai.aurora.memory import MessageMemory
+print("✓ Agent model imported")
+from aurora_ai.arium.memory import MessageMemory
+print("✓ MessageMemory imported")
 
+print("🔧 Creating FastAPI app...")
 app = FastAPI(
     title="Aurora AI API",
     description="Aurora AI Agent Framework API",
     version="1.0.0"
 )
+print("✓ FastAPI app created")
 
 # CORS middleware
+print("🔒 Setting up CORS middleware...")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Configure appropriately for production
@@ -30,8 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+print("✓ CORS configured")
 
 # Request/Response models
+print("📝 Defining request/response models...")
 class AgentRequest(BaseModel):
     prompt: str
     model: str = "gpt-4o-mini"
@@ -48,10 +60,12 @@ class SimpleWorkflowRequest(BaseModel):
 
 class StudioAIWorkflowRequest(BaseModel):
     prompt: str
+print("✓ Models defined")
 
 @app.get("/")
 async def root():
     """Health check endpoint"""
+    print("📡 Root endpoint called")
     return {"message": "Flo AI API is running!", "status": "healthy"}
 
 @app.get("/health")
@@ -289,6 +303,8 @@ async def run_yaml_workflow(request: WorkflowRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
+    print("🌐 Starting uvicorn server...")
     import uvicorn
     port = int(os.getenv("PORT", 8000))
+    print(f"🚀 Server will run on http://0.0.0.0:{port}")
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -1,3 +1,3 @@
-from .flo_utils import FloUtils
+from .aurora_utils import FloUtils
 
 __all__ = ['FloUtils']

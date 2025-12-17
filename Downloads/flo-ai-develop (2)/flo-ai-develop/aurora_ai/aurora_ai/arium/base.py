@@ -1,13 +1,13 @@
 import inspect
 from functools import partial
-from aurora_ai.aurora.nodes import auroraNode, ForEachNode
-from aurora_ai.aurora.protocols import ExecutableNode
+from .nodes import auroraNode, ForEachNode
+from .protocols import ExecutableNode
 from aurora_ai.models.agent import Agent
 from aurora_ai.tool.base_tool import Tool
 from aurora_ai.utils.logger import logger
 from typing import List, Optional, Callable, Literal, get_origin, get_args, Dict
 from collections.abc import Awaitable as AwaitableABC
-from aurora_ai.aurora.models import StartNode, EndNode, Edge, default_router
+from .models import StartNode, EndNode, Edge, default_router
 from pathlib import Path
 
 

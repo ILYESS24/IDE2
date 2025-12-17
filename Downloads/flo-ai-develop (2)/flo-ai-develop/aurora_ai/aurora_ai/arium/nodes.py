@@ -1,12 +1,12 @@
-from aurora_ai.aurora.protocols import ExecutableNode
+from .protocols import ExecutableNode
 from typing import List, Any, Dict, Optional, TYPE_CHECKING, Callable
 from aurora_ai.utils.logger import logger
-from aurora_ai.aurora.memory import MessageMemory
+from .memory import MessageMemory
 from aurora_ai.models import BaseMessage, UserMessage
 import asyncio
 
 if TYPE_CHECKING:  # need to have an optional import else will get circular dependency error as aurora also has auroraNode reference
-    from aurora_ai.aurora.aurora import aurora
+    from .arium import aurora
 
 
 class auroraNode:

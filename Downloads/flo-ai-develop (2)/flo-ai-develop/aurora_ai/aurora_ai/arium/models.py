@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, List, Optional
 from functools import partial
-from aurora_ai.aurora.memory import BaseMemory
+from .memory import BaseMemory
 
 
 def default_router(

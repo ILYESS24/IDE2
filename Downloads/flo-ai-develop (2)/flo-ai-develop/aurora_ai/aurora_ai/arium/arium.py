@@ -1,11 +1,11 @@
-from aurora_ai.aurora.base import Baseaurora
-from aurora_ai.aurora.memory import MessageMemory, BaseMemory, MessageMemoryItem
+from .base import Baseaurora
+from .memory import MessageMemory, BaseMemory, MessageMemoryItem
 from aurora_ai.models import BaseMessage, UserMessage, TextMessageContent
 from typing import List, Dict, Any, Optional, Callable
 from aurora_ai.models.agent import Agent
-from aurora_ai.aurora.models import StartNode, EndNode
-from aurora_ai.aurora.events import auroraEventType, auroraEvent
-from aurora_ai.aurora.nodes import auroraNode, ForEachNode, FunctionNode
+from .models import StartNode, EndNode
+from .events import auroraEventType, auroraEvent
+from .nodes import auroraNode, ForEachNode, FunctionNode
 from aurora_ai.utils.logger import logger
 from aurora_ai.utils.variable_extractor import (
     extract_variables_from_inputs,

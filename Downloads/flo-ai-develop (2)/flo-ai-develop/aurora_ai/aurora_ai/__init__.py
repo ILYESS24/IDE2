@@ -30,18 +30,18 @@ from .llm import BaseLLM, Anthropic, OpenAI, OllamaLLM, Gemini, OpenAIVLLM
 # Tool package - Tool framework components
 from .tool import Tool, ToolExecutionError, aurora_tool, create_tool_from_function
 
-# Aurora package - Workflow and memory components
-from .aurora import (
-    Aurora,
-    BaseAurora,
+# Arium package - Workflow and memory components
+from .arium import (
+    aurora,
+    Baseaurora,
     MessageMemory,
     BaseMemory,
     StartNode,
     EndNode,
     Edge,
-    AuroraBuilder,
-    AuroraEvent,
-    AuroraEventType,
+    auroraBuilder,
+    auroraEvent,
+    auroraEventType,
     MessageMemoryItem,
     default_event_callback,
     create_aurora,
@@ -94,7 +94,7 @@ __all__ = [
     'ToolExecutionError',
     'aurora_tool',
     'create_tool_from_function',
-    # aurora
+    # arium
     'aurora',
     'Baseaurora',
     'create_aurora',
@@ -107,7 +107,7 @@ __all__ = [
     # Builder
     'AgentBuilder',
     'auroraBuilder',
-    # aurora Event system
+    # Arium Event system
     'auroraEventType',
     'auroraEvent',
     'default_event_callback',
