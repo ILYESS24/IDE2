@@ -25,6 +25,12 @@ import { useClerkSafe } from "./hooks/use-clerk-safe";
 const Home = lazy(() => import("./components/home"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 
+// Pages marketing
+const AI = lazy(() => import("./pages/AI"));
+const Enterprise = lazy(() => import("./pages/Enterprise"));
+const Docs = lazy(() => import("./pages/Docs"));
+const Resources = lazy(() => import("./pages/Resources"));
+
 // Dashboard (chargé après authentification)
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout"));
 const DashboardStudio = lazy(() => import("./pages/dashboard/DashboardStudio"));
@@ -235,6 +241,12 @@ function App() {
               <Routes>
                 {/* Page d'accueil */}
                 <Route path="/" element={<Home />} />
+
+                {/* Pages marketing */}
+                <Route path="/ai" element={<AI />} />
+                <Route path="/enterprise" element={<Enterprise />} />
+                <Route path="/docs" element={<Docs />} />
+                <Route path="/resources" element={<Resources />} />
 
               {/* ========== DASHBOARD ROUTES ========== */}
               <Route
