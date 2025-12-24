@@ -8,6 +8,8 @@ import { ButtonGetStarted } from "@/components/ui/button-get-started";
 import { CreationMenu } from "@/components/ui/creation-menu";
 import { TOOL_URLS } from "@/types/plans";
 import { PromptInput } from "@/components/ui/prompt-input";
+import { MarketingBadges } from "@/components/marketing-badges";
+import { Testimonials } from "@/components/unique-testimonial";
 import {
   Code2,
   Palette,
@@ -162,6 +164,16 @@ const Section = React.memo(function Section({ id, index, colors, content, isActi
             }`}>
               <Component>{content.description}</Component>
             </div>
+          </div>
+
+          {/* Marketing Badges */}
+          <div className="mb-8 md:mb-12 transition-all duration-700 delay-600">
+            <MarketingBadges />
+          </div>
+
+          {/* Testimonials */}
+          <div className="mb-8 md:mb-12 transition-all duration-700 delay-700">
+            <Testimonials />
           </div>
 
           {/* Espace de Prompt Central */}

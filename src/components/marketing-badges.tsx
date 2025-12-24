@@ -14,9 +14,9 @@ interface Badge {
 
 const badges: Badge[] = [
   {
-    id: "marketing",
-    label: "marketing",
-    color: "from-amber-300 to-yellow-400",
+    id: "app-builder",
+    label: "APP BUILDER",
+    color: "from-blue-400 to-blue-600",
     size: "lg",
     rotation: -3,
     zIndex: 1,
@@ -24,9 +24,9 @@ const badges: Badge[] = [
     offsetY: -60,
   },
   {
-    id: "seo",
-    label: "SEO",
-    color: "from-orange-400 to-orange-500",
+    id: "games",
+    label: "GAMES",
+    color: "from-purple-400 to-purple-600",
     size: "sm",
     rotation: 2,
     zIndex: 2,
@@ -34,9 +34,9 @@ const badges: Badge[] = [
     offsetY: -35,
   },
   {
-    id: "social-media",
-    label: "social media",
-    color: "from-amber-400 to-yellow-500",
+    id: "agent-ia",
+    label: "AGENT IA",
+    color: "from-green-400 to-green-600",
     size: "lg",
     rotation: -2,
     zIndex: 3,
@@ -44,9 +44,9 @@ const badges: Badge[] = [
     offsetY: -15,
   },
   {
-    id: "email-marketing",
-    label: "email marketing",
-    color: "from-pink-300 to-pink-400",
+    id: "website",
+    label: "WEBSITE",
+    color: "from-pink-400 to-pink-600",
     size: "lg",
     rotation: 0,
     zIndex: 4,
@@ -54,9 +54,9 @@ const badges: Badge[] = [
     offsetY: 25,
   },
   {
-    id: "conversions",
-    label: "conversions",
-    color: "from-blue-400 to-blue-500",
+    id: "texte",
+    label: "TEXTE",
+    color: "from-orange-400 to-orange-600",
     size: "md",
     rotation: 3,
     zIndex: 5,
@@ -64,9 +64,9 @@ const badges: Badge[] = [
     offsetY: 65,
   },
   {
-    id: "ads",
-    label: "ads",
-    color: "from-sky-300 to-sky-400",
+    id: "anythings",
+    label: "ANYTHINGS",
+    color: "from-red-400 to-red-600",
     size: "sm",
     rotation: -1,
     zIndex: 6,
@@ -87,6 +87,14 @@ export function MarketingBadges() {
 
   const handleClick = (id: string) => {
     setClickedId(clickedId === id ? null : id)
+
+    // Redirections selon les spécifications
+    if (id === 'agent-ia') {
+      window.location.href = '/ai' // Vers la page AI Agents
+    } else if (id !== 'texte') {
+      window.location.href = '/docs' // Vers la page Website Builder (iframe interface)
+    }
+    // 'texte' reste sans redirection spécifique
   }
 
   return (
