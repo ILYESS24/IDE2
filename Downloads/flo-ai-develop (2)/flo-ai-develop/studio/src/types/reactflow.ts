@@ -17,7 +17,9 @@ export interface RouterNodeData {
   isEnd?: boolean;
 }
 
-export type CustomNode = Node<AgentNodeData | ToolNodeData | RouterNodeData>;
+export type CustomNodeData = AgentNodeData | ToolNodeData | RouterNodeData;
+
+export type CustomNode = Node<CustomNodeData>;
 
 export interface CustomEdgeData {
   router?: string;
@@ -34,4 +36,17 @@ export interface FlowState {
   edges: CustomEdge[];
   selectedNode?: CustomNode;
   selectedEdge?: CustomEdge;
+}
+
+// Helper type guards
+export function isAgentNode(node: CustomNode): node is Node<AgentNodeData> {
+  return node.type === 'agent';
+}
+
+export function isToolNode(node: CustomNode): node is Node<ToolNodeData> {
+  return node.type === 'tool';
+}
+
+export function isRouterNode(node: CustomNode): node is Node<RouterNodeData> {
+  return node.type === 'router';
 }

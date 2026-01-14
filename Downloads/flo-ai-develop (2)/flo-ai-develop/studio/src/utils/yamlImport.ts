@@ -10,37 +10,73 @@ export interface ImportResult {
   workflowVersion: string;
 }
 
+/**
+ * Clean YAML content from markdown code blocks
+ */
+function cleanYamlContent(content: string): string {
+  let cleaned = content.trim();
+  
+  // Remove markdown code blocks (```yaml or ```)
+  if (cleaned.startsWith('```yaml')) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.slice(3);
+  }
+  
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.slice(0, -3);
+  }
+  
+  return cleaned.trim();
+}
+
 export function parseAriumYAML(yamlContent: string): ImportResult {
   try {
-    const workflow = load(yamlContent) as AriumWorkflow;
+    // Clean the YAML content first
+    const cleanedContent = cleanYamlContent(yamlContent);
+    const workflow = load(cleanedContent) as AriumWorkflow;
     
     if (!workflow || !workflow.arium) {
-      throw new Error('Invalid Arium workflow format');
+      throw new Error('Invalid Arium workflow format: missing arium section');
     }
 
     const nodes: CustomNode[] = [];
     const edges: CustomEdge[] = [];
     
-    // Create agent nodes
+    // Calculate grid positions for visual layout
+    const gridWidth = 350;
+    const gridHeight = 200;
+    const startX = 100;
+    const startY = 100;
+    
+    // Create agent nodes with smart positioning
     if (workflow.arium.agents) {
-      workflow.arium.agents.forEach((agent, index) => {
+      workflow.arium.agents.forEach((agentData, index) => {
+        // Position agents in a flow layout
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        
         const agentNode: CustomNode = {
-          id: agent.name,
+          id: agentData.name,
           type: 'agent',
           position: { 
-            x: 100 + (index % 3) * 300, 
-            y: 100 + Math.floor(index / 3) * 200 
+            x: startX + col * gridWidth, 
+            y: startY + row * gridHeight 
           },
           data: {
             agent: {
-              id: agent.name,
-              name: agent.name,
-              role: agent.role,
-              job: agent.job,
-              model: agent.model,
-              settings: agent.settings,
-              tools: agent.tools,
-              parser: agent.parser,
+              id: agentData.name,
+              name: agentData.name,
+              role: agentData.role || '',
+              job: agentData.job,
+              model: {
+                provider: agentData.model?.provider || 'openai',
+                name: agentData.model?.name || 'gpt-4o-mini',
+                temperature: agentData.model?.temperature,
+              },
+              settings: agentData.settings,
+              tools: agentData.tools,
+              parser: agentData.parser,
             } as Agent,
           },
         };
@@ -48,18 +84,44 @@ export function parseAriumYAML(yamlContent: string): ImportResult {
       });
     }
 
-    // TODO: Add router support when the type definition includes routers
-    // Currently routers are not defined in AriumWorkflow type
+    // Create router nodes if defined
+    if (workflow.arium.routers) {
+      workflow.arium.routers.forEach((routerData, index) => {
+        const row = Math.floor((workflow.arium.agents.length + index) / 3);
+        const col = (workflow.arium.agents.length + index) % 3;
+        
+        const routerNode: CustomNode = {
+          id: `router_${routerData.name}`,
+          type: 'router',
+          position: { 
+            x: startX + col * gridWidth, 
+            y: startY + row * gridHeight 
+          },
+          data: {
+            router: {
+              id: routerData.name,
+              name: routerData.name,
+              type: routerData.type as any || 'smart',
+              config: routerData.routing_options,
+            },
+          },
+        };
+        nodes.push(routerNode);
+      });
+    }
 
     // Create tool nodes if tools are defined
     if (workflow.arium.tools) {
       workflow.arium.tools.forEach((tool, index) => {
+        const row = Math.floor((workflow.arium.agents.length + (workflow.arium.routers?.length || 0) + index) / 3);
+        const col = (workflow.arium.agents.length + (workflow.arium.routers?.length || 0) + index) % 3;
+        
         const toolNode: CustomNode = {
           id: `tool_${tool.name}`,
           type: 'tool',
           position: { 
-            x: 200 + (index % 3) * 300, 
-            y: 450 + Math.floor(index / 3) * 200 
+            x: startX + col * gridWidth, 
+            y: startY + row * gridHeight 
           },
           data: {
             tool: {
@@ -75,21 +137,30 @@ export function parseAriumYAML(yamlContent: string): ImportResult {
     // Create edges from workflow definition
     if (workflow.arium.workflow && workflow.arium.workflow.edges) {
       workflow.arium.workflow.edges.forEach((edge, index) => {
-        edge.to.forEach((target, targetIndex) => {
-          const edgeId = `edge_${edge.from}_${target}_${index}_${targetIndex}`;
-          const workflowEdge: CustomEdge = {
-            id: edgeId,
-            source: edge.from,
-            target: target,
-            type: 'custom',
-            data: {
-              router: edge.router,
-            },
-          };
-          edges.push(workflowEdge);
-        });
+        if (edge.to && Array.isArray(edge.to)) {
+          edge.to.forEach((target, targetIndex) => {
+            const edgeId = `edge_${edge.from}_${target}_${index}_${targetIndex}`;
+            const workflowEdge: CustomEdge = {
+              id: edgeId,
+              source: edge.from,
+              target: target,
+              type: 'custom',
+              data: {
+                router: edge.router,
+              },
+            };
+            edges.push(workflowEdge);
+          });
+        }
       });
     }
+
+    console.log('📦 Parsed workflow:', {
+      agents: workflow.arium.agents?.length || 0,
+      routers: workflow.arium.routers?.length || 0,
+      tools: workflow.arium.tools?.length || 0,
+      edges: edges.length,
+    });
 
     return {
       nodes,
@@ -106,7 +177,8 @@ export function parseAriumYAML(yamlContent: string): ImportResult {
 
 export function validateAriumYAML(yamlContent: string): { isValid: boolean; error?: string } {
   try {
-    const workflow = load(yamlContent) as any;
+    const cleanedContent = cleanYamlContent(yamlContent);
+    const workflow = load(cleanedContent) as any;
     
     if (!workflow) {
       return { isValid: false, error: 'Empty or invalid YAML content' };
@@ -160,30 +232,38 @@ export async function importFromYAML(yamlContent: string): Promise<{
   metadata: { name: string; version: string; description: string };
 }> {
   try {
+    console.log('🔄 Processing YAML import...');
+    console.log('📄 YAML content length:', yamlContent.length);
+    
     const result = parseAriumYAML(yamlContent);
 
     // Enhanced workflow structure extraction
     let startNodeId: string | null = null;
-    const endNodeIds: string[] = [];
+    let endNodeIds: string[] = [];
 
     // Parse workflow structure from YAML
-    const workflow = load(yamlContent) as any;
+    const cleanedContent = cleanYamlContent(yamlContent);
+    const workflow = load(cleanedContent) as any;
+    
     if (workflow?.arium?.workflow) {
       startNodeId = workflow.arium.workflow.start || null;
-      endNodeIds = Array.isArray(workflow.arium.workflow.end)
-        ? workflow.arium.workflow.end
-        : [workflow.arium.workflow.end].filter(Boolean);
+      
+      if (Array.isArray(workflow.arium.workflow.end)) {
+        endNodeIds = workflow.arium.workflow.end;
+      } else if (workflow.arium.workflow.end) {
+        endNodeIds = [workflow.arium.workflow.end];
+      }
     }
 
-    // If no workflow structure defined, use defaults
+    // If no workflow structure defined, use defaults based on parsed nodes
     if (!startNodeId && result.nodes.length > 0) {
       startNodeId = result.nodes[0].id;
     }
     if (endNodeIds.length === 0 && result.nodes.length > 0) {
-      endNodeIds.push(result.nodes[result.nodes.length - 1].id);
+      endNodeIds = [result.nodes[result.nodes.length - 1].id];
     }
 
-    console.log('🎯 Workflow imported:', {
+    console.log('🎯 Workflow imported successfully:', {
       nodesCount: result.nodes.length,
       edgesCount: result.edges.length,
       startNode: startNodeId,

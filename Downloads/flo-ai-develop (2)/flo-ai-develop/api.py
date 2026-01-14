@@ -281,12 +281,13 @@ Return ONLY the YAML, no other text."""
 
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": request.prompt},
+            {"role": "user", "content": data.prompt},
         ]
 
         logger.info(f"🤖 Generating workflow for prompt: {data.prompt[:100]}...")
 
-        yaml_workflow = await llm.generate(messages)  # type: ignore[arg-type]
+        # Limit max_tokens to stay within OpenRouter credit limits (3331 tokens available)
+        yaml_workflow = await llm.generate(messages, max_tokens=3000)  # type: ignore[arg-type]
 
         # Ensure it's a plain string
         if isinstance(yaml_workflow, dict):
