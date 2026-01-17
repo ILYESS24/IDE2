@@ -33,15 +33,6 @@ directory = "functions"
 # Pages configuration
 pages_build_output_dir = "dist"
 
-# Environment variables for Pages build
-[vars]
-VITE_SUPABASE_URL = "https://otxxjczxwhtngcferckz.supabase.co"
-# SENSITIVE KEYS REMOVED - Use 'wrangler secret put' to set these securely:
-# - VITE_SUPABASE_ANON_KEY
-# - VITE_SUPABASE_SERVICE_ROLE_KEY
-# - VITE_STRIPE_PUBLISHABLE_KEY
-VITE_CLERK_PUBLISHABLE_KEY = "pk_test_YXNzdXJlZC1zYWxtb24tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA"
-
 # Environment variables for Cloudflare Functions
 # SENSITIVE KEYS REMOVED - Use 'wrangler secret put' to set these:
 # - STRIPE_SECRET_KEY
