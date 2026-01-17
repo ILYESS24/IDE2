@@ -1,0 +1,127 @@
+name = "aurion-saas"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Functions configuration
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "service-worker"
+
+# Environment variables for Cloudflare Functions
+[vars]
+# Add external dependencies for Functions
+NODE_ENV = "production"
+
+# Build configuration for Pages
+pages_build_output_dir = "dist"
+
+# Functions configuration
+[functions]
+directory = "functions"
+
+# External dependencies for Functions
+[functions.externals]
+"@supabase/supabase-js" = true
+"stripe" = true
+"express" = true
+"cors" = true
+"pg" = true
+"jsonwebtoken" = true
+
+# Pages configuration
+pages_build_output_dir = "dist"
+
+# Environment variables for Pages build
+[vars]
+VITE_SUPABASE_URL = "https://otxxjczxwhtngcferckz.supabase.co"
+# SENSITIVE KEYS REMOVED - Use 'wrangler secret put' to set these securely:
+# - VITE_SUPABASE_ANON_KEY
+# - VITE_SUPABASE_SERVICE_ROLE_KEY
+# - VITE_STRIPE_PUBLISHABLE_KEY
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_YXNzdXJlZC1zYWxtb24tMzkuY2xlcmsuYWNjb3VudHMuZGV2JA"
+
+# Environment variables for Cloudflare Functions
+# SENSITIVE KEYS REMOVED - Use 'wrangler secret put' to set these:
+# - STRIPE_SECRET_KEY
+# - SUPABASE_SERVICE_ROLE_KEY
+# - OPENROUTER_API_KEY
+# - FREEPIK_API_KEY
+STRIPE_WEBHOOK_SECRET = "whsec_placeholder_webhook_secret"
+SUPABASE_URL = "https://otxxjczxwhtngcferckz.supabase.co"
+
+# Environment variables for production
+NODE_ENV = "production"
+VITE_APP_ENV = "production"
+
+# JWT Secret for authentication (REQUIRED)
+# SENSITIVE KEY REMOVED - Use 'wrangler secret put JWT_SECRET' to set securely
+# Generate a secure key with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# CORS allowed origins (OPTIONAL)
+ALLOWED_ORIGINS = "https://aurion.app,https://www.aurion.app,https://genim.app,https://www.genim.app"
+
+# Domain configuration (uncomment when you have a custom domain)
+# [[pages_build_config]]
+# destination_dir = "dist"
+# root_dir = "dist"
+
+# ===========================================
+# SECURITY HEADERS - PRODUCTION HARDENED
+# ===========================================
+
+# Default headers for all routes
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking attacks
+    X-Frame-Options = "DENY"
+    # Prevent MIME-type sniffing
+    X-Content-Type-Options = "nosniff"
+    # Control referrer information
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Disable unnecessary browser features
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    # XSS Protection (for older browsers)
+    X-XSS-Protection = "1; mode=block"
+    # Content Security Policy - Production Ready
+    # Note: 'unsafe-inline' needed for Tailwind/React styles, removed 'unsafe-eval' for security
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://clerk.accounts.dev https://*.clerk.accounts.dev https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://*.clerk.accounts.dev https://api.stripe.com https://*.openrouter.ai https://*.cloudflare.com wss://*.supabase.co; frame-src https://js.stripe.com https://hooks.stripe.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    # Strict Transport Security (HSTS)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+# Cache headers for static assets - Long term caching
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+
+# Cache headers for fonts
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# API routes headers - No caching, strict security
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+    X-Content-Type-Options = "nosniff"
+
+# HTML files - Short cache for updates
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Service worker - No caching
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
